@@ -1,0 +1,55 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+.button {
+  border: none;
+  outline: none;
+  appearance: transparent;
+  color: inherit;
+}
+body {
+ 
+  color: #eef1f1;
+  font-weight: bold;
+
+  background: linear-gradient(#ea7508,#ffd000 ,#720011);
+  /* background-size: 20px 20px; */
+
+}
+.App {
+  min-height: 100vh;
+  display: flex;
+  max-height: 800px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+.developer span {
+  font-weight: 600;
+  color: #00ff62;
+}
+
+
+@media (max-width: 610px) {
+  .keys-window {
+    flex-direction: row;
+    gap: 0;
+  }
+  .calculator {
+    margin: 1rem;
+    max-height: 500px;
+  }
+  .line {
+    display: none;
+  }
+  .keys-scientific {
+    width: 100%;
+  }
+  .body {
+    padding: 1rem;
+  }
+}

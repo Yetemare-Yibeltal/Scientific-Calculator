@@ -1,0 +1,28 @@
+.display-window {
+  background-color: #607fab;
+  background-color: rgb(189, 235, 189);
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
+  border: 2px solid #000;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 3m;
+  height: 160px;
+  flex-direction: column;
+}
+.display-window .expression {
+  overflow-x: auto;
+  width: 100%;
+  font-size: 20px;
+  text-align: right;
+  color: #000;
+  scrollbar-width: none;
+  padding: 20px;
+}
+.display-window .result {
+  font-size: 25px;
+  padding: 10px;
+  font-weight: 600;
+  color:#000;
+}

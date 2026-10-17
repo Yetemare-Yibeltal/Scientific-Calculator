@@ -1,0 +1,49 @@
+.keys-window {
+  background-color: rgba(29, 29, 29);
+  display: flex;
+  padding: 1rem;
+  gap: 16px;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+.keys-window button {
+  color: rgba(255, 255, 255 0.5);
+  border-radius: 10px;
+  height: 50px;
+}
+.keys-window button:hover {
+  background-color: rgba(255, 255, 255 0.1);
+}
+@media(max-width:640px){
+  .keys-window button{
+    height: 35px;
+    width:35px;
+    border-radius: 5px;
+  }
+}
+.keys-scientific {
+  width: 30%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:10px;
+}
+.line {
+  max-block-size: 1.5rem;
+  width: 5px;
+  background-color: rgba(255, 255, 255 0.08);
+}
+.basic-keys {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+.basic-keys .equal {
+  background-color: #0bc2f4;
+  color: #0f0f0f;
+}
+.basic-keys .number {
+  color: #fff;
+    background-color: rgba(29, 29, 29);
+  font-weight: 600;
+}
