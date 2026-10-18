@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { evaluate } from "mathjs";
 import DisplayWindow from "../Components/Display Window/DisplayWindow";
 import KeyWindow from "../Components/Key Window/KeyWindow";
 import "../Components/Calculator.css";
@@ -34,12 +35,35 @@ const Calculator = () => {
         const balancedExp = balanceParentheses(expression); // Auto-close parentheses
 
         // Prevent trailing operators like 2 + or 3 **
-        if (/[\+\-\*\/\^]$/.test(balancedExp)) {
+        if (/[-+*\/^]$/.test(balancedExp)) {
           setResult("Incomplete Expression!");
           return;
         }
 
-        let compute = eval(balancedExp); // Evaluate expression
+        const mathExpression = balancedExp
+          .replace(/Math\.log10\(/g, "log10(")
+          .replace(/Math\.sin\(/g, "sin(")
+          .replace(/Math\.cos\(/g, "cos(")
+          .replace(/Math\.tan\(/g, "tan(")
+          .replace(/Math\.sqrt\(/g, "sqrt(")
+          .replace(/Math\.log\(/g, "log(")
+          .replace(/Math\.PI\b/g, "pi")
+          .replace(/Math\.E\b/g, "e");
+
+        const allowedNames = new Set([
+          "sin", "cos", "tan", "log", "log10", "sqrt",
+          "pi", "e", "factorial"
+        ]);
+        const names = mathExpression.match(/[A-Za-z_]\w*/g) || [];
+
+        if (
+          !/^[0-9A-Za-z_+*/^().,\s-]+$/.test(mathExpression) ||
+          names.some((name) => !allowedNames.has(name))
+        ) {
+          throw new Error("Invalid mathematical expression");
+        }
+
+        let compute = evaluate(mathExpression);
         compute = parseFloat(compute.toFixed(4)); // Round result
         setResult(compute);
       } catch {
