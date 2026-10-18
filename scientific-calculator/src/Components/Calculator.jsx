@@ -3,139 +3,178 @@ import { evaluate } from "mathjs";
 import DisplayWindow from "../Components/Display Window/DisplayWindow";
 import KeyWindow from "../Components/Key Window/KeyWindow";
 import "../Components/Calculator.css";
-import '../Components/Display Window/DisplayWindow.css';
-import '../Components/Key Window/KeyWindow.css';
+import "../Components/Display Window/DisplayWindow.css";
+import "../Components/Key Window/KeyWindow.css";
+
 const Calculator = () => {
-  // Stores the raw expression used for calculation
+  // Stores the expression used for calculation.
   const [expression, setExpression] = useState("");
 
-  // Stores the user-friendly version of the expression for display
+  // Stores the user-friendly expression shown on the display.
   const [displayExp, setDisplayExp] = useState("");
 
-  // Stores the final result
+  // Stores the calculation result.
   const [result, setResult] = useState("0");
 
-  // Scientific function mappings to JavaScript syntax
+  // Maps calculator buttons to mathematical expressions.
   const sciFunc = {
-    sin: "Math.sin(",
-    cos: "Math.cos(",
-    tan: "Math.tan(",
-    ln: "Math.log(",
-    log: "Math.log10(",
-    sqrt: "Math.sqrt(",
-    pi: "Math.PI",
-    e: "Math.E",
-    "^": "**", // JS exponentiation
+    sin: "sin(",
+    cos: "cos(",
+    tan: "tan(",
+    ln: "log(",
+    log: "log10(",
+    sqrt: "sqrt(",
+    pi: "pi",
+    e: "e",
+    "^": "^",
   };
 
-  // Evaluates the expression and updates the result
+  // Evaluates the mathematical expression safely with mathjs.
   function calcResult() {
-    if (expression.length !== 0) {
-      try {
-        const balancedExp = balanceParentheses(expression); // Auto-close parentheses
+    if (!expression.trim()) {
+      setResult("An Error Occurred!");
+      return;
+    }
 
-        // Prevent trailing operators like 2 + or 3 **
-        if (/[-+*\/^]$/.test(balancedExp)) {
-          setResult("Incomplete Expression!");
-          return;
-        }
+    try {
+      const balancedExp = balanceParentheses(expression);
 
-        const mathExpression = balancedExp
-          .replace(/Math\.log10\(/g, "log10(")
-          .replace(/Math\.sin\(/g, "sin(")
-          .replace(/Math\.cos\(/g, "cos(")
-          .replace(/Math\.tan\(/g, "tan(")
-          .replace(/Math\.sqrt\(/g, "sqrt(")
-          .replace(/Math\.log\(/g, "log(")
-          .replace(/Math\.PI\b/g, "pi")
-          .replace(/Math\.E\b/g, "e");
-
-        const allowedNames = new Set([
-          "sin", "cos", "tan", "log", "log10", "sqrt",
-          "pi", "e", "factorial"
-        ]);
-        const names = mathExpression.match(/[A-Za-z_]\w*/g) || [];
-
-        if (
-          !/^[0-9A-Za-z_+*/^().,\s-]+$/.test(mathExpression) ||
-          names.some((name) => !allowedNames.has(name))
-        ) {
-          throw new Error("Invalid mathematical expression");
-        }
-
-        let compute = evaluate(mathExpression);
-        compute = parseFloat(compute.toFixed(4)); // Round result
-        setResult(compute);
-      } catch {
-        setResult("An Error Occurred!");
+      // Reject expressions ending with an operator.
+      if ("+-*/^".includes(balancedExp.slice(-1))) {
+        setResult("Incomplete Expression!");
+        return;
       }
-    } else {
+
+      // Convert any legacy JavaScript-style math expressions.
+      const mathExpression = balancedExp
+        .replace(/\*\*/g, "^")
+        .replace(/Math\.log10\(/g, "log10(")
+        .replace(/Math\.sin\(/g, "sin(")
+        .replace(/Math\.cos\(/g, "cos(")
+        .replace(/Math\.tan\(/g, "tan(")
+        .replace(/Math\.sqrt\(/g, "sqrt(")
+        .replace(/Math\.log\(/g, "log(")
+        .replace(/Math\.PI\b/g, "pi")
+        .replace(/Math\.E\b/g, "e");
+
+      // Allow only supported mathematical names and characters.
+      const allowedNames = new Set([
+        "sin",
+        "cos",
+        "tan",
+        "log",
+        "log10",
+        "sqrt",
+        "pi",
+        "e",
+        "factorial",
+      ]);
+
+      const names = mathExpression.match(/[A-Za-z_]\w*/g) || [];
+
+      const validCharacters = /^[0-9A-Za-z_+*/^().,\s-]+$/.test(
+        mathExpression
+      );
+
+      if (
+        !validCharacters ||
+        names.some((name) => !allowedNames.has(name))
+      ) {
+        throw new Error("Invalid mathematical expression");
+      }
+
+      const computedValue = evaluate(mathExpression);
+
+      // Only display finite numeric results.
+      if (
+        typeof computedValue !== "number" ||
+        !Number.isFinite(computedValue)
+      ) {
+        throw new Error("Invalid calculation result");
+      }
+
+      // Round the result to four decimal places.
+      const roundedResult = Number(computedValue.toFixed(4));
+      setResult(String(roundedResult));
+    } catch {
       setResult("An Error Occurred!");
     }
   }
 
-  // Handles button clicks from KeyWindow
+  // Handles calculator button clicks.
   function handleButton(value) {
     if (value === "AC") {
-      // Clear all states
       setExpression("");
       setDisplayExp("");
       setResult("0");
-    } else if (value === "DEL") {
-      // Remove last character
-      setExpression(expression.slice(0, -1));
-      setDisplayExp(displayExp.slice(0, -1));
-    } else if (value === "pi" || value === "e") {
-      // Constants: no parentheses
-      setExpression(expression + sciFunc[value]);
-      setDisplayExp(displayExp + value);
-    } else if (value === "^") {
-      // Exponentiation operator
-      setExpression(expression + sciFunc[value]);
-      setDisplayExp(displayExp + "^");
-    } else if (sciFunc.hasOwnProperty(value)) {
-      // Functions like sin, cos, sqrt
-      setExpression(expression + sciFunc[value]);
-      setDisplayExp(displayExp + value + "(");
-    } else if (value === "!") {
-      // Apply factorial to last number
-      const lastNum = extractLastNum(expression);
-      if (lastNum != null) {
-        setExpression(expression.replace(lastNum, `factorial(${lastNum})`));
-        setDisplayExp(displayExp + "!");
-      }
-    } else if (value === "=") {
-      // Calculate result
-      calcResult();
-    } else {
-      // Append normal value
-      setExpression(expression + value);
-      setDisplayExp(displayExp + value);
+      return;
     }
+
+    if (value === "DEL") {
+      setExpression((previous) => previous.slice(0, -1));
+      setDisplayExp((previous) => previous.slice(0, -1));
+      return;
+    }
+
+    if (value === "=") {
+      calcResult();
+      return;
+    }
+
+    if (value === "^") {
+      setExpression((previous) => previous + "^");
+      setDisplayExp((previous) => previous + "^");
+      return;
+    }
+
+    if (value === "!") {
+      // Replace the last numeric value with its factorial expression.
+      const match = expression.match(/(\d+(?:\.\d+)?)\s*$/);
+
+      if (match) {
+        const lastNum = match[1];
+        const startIndex = match.index;
+
+        const updatedExpression =
+          expression.slice(0, startIndex) +
+          `factorial(${lastNum})`;
+
+        setExpression(updatedExpression);
+        setDisplayExp((previous) => previous + "!");
+      }
+      return;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(sciFunc, value)) {
+      const mappedValue = sciFunc[value];
+
+      setExpression((previous) => previous + mappedValue);
+
+      if (["pi", "e"].includes(value)) {
+        setDisplayExp((previous) => previous + value);
+      } else {
+        setDisplayExp((previous) => previous + value + "(");
+      }
+      return;
+    }
+
+    // Append digits, decimal points, parentheses, and operators.
+    setExpression((previous) => previous + value);
+    setDisplayExp((previous) => previous + value);
   }
 
-  // Factorial function exposed to eval
-  function factorial(n) {
-    let result = 1;
-    for (let i = 1; i <= n; i++) result *= i;
-    return result;
-  }
-  window.factorial = factorial;
-
-  // Extracts the last number from the expression
-  function extractLastNum(exp) {
-    const numbers = exp.match(/\d+(\.\d+)?/g);
-    return numbers ? numbers[numbers.length - 1] : null;
-  }
-
-  // Balances open and closed parentheses before evaluation
+  // Adds closing parentheses for any unmatched opening parentheses.
   function balanceParentheses(exp) {
-    const open = (exp.match(/\(/g) || []).length;
-    const close = (exp.match(/\)/g) || []).length;
-    return exp + ")".repeat(open - close);
+    const openCount = (exp.match(/\(/g) || []).length;
+    const closeCount = (exp.match(/\)/g) || []).length;
+
+    if (closeCount > openCount) {
+      throw new Error("Unbalanced parentheses");
+    }
+
+    return exp + ")".repeat(openCount - closeCount);
   }
 
-  // Render calculator layout
   return (
     <div className="calculator">
       <DisplayWindow expression={displayExp} result={result} />
